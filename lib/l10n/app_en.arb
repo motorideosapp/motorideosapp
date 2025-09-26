@@ -1,0 +1,16 @@
+{
+  "@@locale": "en",
+  "appTitle": "Moto Ride OS",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "freeVersion": "Free Version",
+  "@freeVersion": {
+    "description": "Text for free version of the app"
+  },
+  "premiumVersion": "Premium",
+  "@premiumVersion": {
+    "description": "Text for premium version of the app"
+  },
+  "welcomeMessage": "Welcome to Moto Ride OS!"
+}

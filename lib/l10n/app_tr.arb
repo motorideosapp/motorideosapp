@@ -1,0 +1,16 @@
+{
+  "@@locale": "tr",
+  "appTitle": "Moto Ride OS",
+  "@appTitle": {
+    "description": "Uygulamanın başlığı"
+  },
+  "freeVersion": "Ücretsiz Sürüm",
+  "@freeVersion": {
+    "description": "Uygulamanın ücretsiz sürümü için metin"
+  },
+  "premiumVersion": "Premium",
+  "@premiumVersion": {
+    "description": "Uygulamanın premium sürümü için metin"
+  },
+  "welcomeMessage": "Moto Ride OS'e Hoş Geldiniz!"
+}

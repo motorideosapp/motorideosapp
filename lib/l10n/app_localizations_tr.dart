@@ -1,0 +1,22 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Turkish (`tr`).
+class AppLocalizationsTr extends AppLocalizations {
+  AppLocalizationsTr([String locale = 'tr']) : super(locale);
+
+  @override
+  String get appTitle => 'Moto Ride OS';
+
+  @override
+  String get freeVersion => 'Ücretsiz Sürüm';
+
+  @override
+  String get premiumVersion => 'Premium';
+
+  @override
+  String get welcomeMessage => 'Moto Ride OS\'e Hoş Geldiniz!';
+}
