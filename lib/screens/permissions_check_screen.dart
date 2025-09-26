@@ -150,7 +150,7 @@ class _PermissionsCheckScreenState extends State<PermissionsCheckScreen> {
       (rule) => rule.isViolated(_status!),
       orElse: () => PermissionRule(
         isViolated: (_) => true,
-        errorUIBuilder: (_, onRetry) => _buildLoadingUI(), // Fallback to loading
+        errorUIBuilder: (_, __) => _buildLoadingUI(), // Fallback to loading
       ),
     );
 

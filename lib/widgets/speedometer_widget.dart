@@ -1,3 +1,4 @@
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
@@ -21,26 +22,31 @@ class SpeedometerWidget extends StatelessWidget {
         children: [
           CustomPaint(
             size: const Size(250, 250),
-            painter: SpeedometerPainter(speed: speed, maxSpeed: maxSpeed),
+            painter: SpeedometerPainter(
+              speed: speed,
+              maxSpeed: maxSpeed,
+              context: context, // Pass context to the painter
+            ),
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 speed.toInt().toString(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 80,
                   fontWeight: FontWeight.bold,
                   shadows: [
-                    Shadow(blurRadius: 20.0, color: Colors.cyan),
+                    Shadow(
+                        blurRadius: 20.0, color: Theme.of(context).primaryColor),
                   ],
                 ),
               ),
-              const Text(
+              Text(
                 'KM/H',
                 style: TextStyle(
-                  color: Colors.white70,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                   fontSize: 20,
                   fontWeight: FontWeight.w300,
                 ),
@@ -56,35 +62,45 @@ class SpeedometerWidget extends StatelessWidget {
 class SpeedometerPainter extends CustomPainter {
   final double speed;
   final double maxSpeed;
+  final BuildContext context;
 
-  SpeedometerPainter({required this.speed, required this.maxSpeed});
+  SpeedometerPainter({
+    required this.speed,
+    required this.maxSpeed,
+    required this.context,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
+    final theme = Theme.of(context);
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
     const startAngle = (5 * math.pi) / 6;
     const sweepAngle = (4 * math.pi) / 3;
 
     final backgroundPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
+      ..color = theme.colorScheme.onSurface.withOpacity(0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 15
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweepAngle, false, backgroundPaint);
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle,
+        sweepAngle, false, backgroundPaint);
 
     final progressPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 15
       ..strokeCap = StrokeCap.round
-      ..shader = const LinearGradient(colors: [Colors.cyanAccent, Colors.pinkAccent])
-          .createShader(Rect.fromCircle(center: center, radius: radius));
+      ..shader = LinearGradient(colors: [
+        theme.primaryColor,
+        theme.colorScheme.secondary,
+      ]).createShader(Rect.fromCircle(center: center, radius: radius));
     progressPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 10.0);
     final progress = (speed / maxSpeed).clamp(0.0, 1.0);
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweepAngle * progress, false, progressPaint);
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle,
+        sweepAngle * progress, false, progressPaint);
 
     final tickPaint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = theme.colorScheme.onSurface.withOpacity(0.5)
       ..strokeWidth = 2.0;
 
     final textPainter = TextPainter(
@@ -110,7 +126,7 @@ class SpeedometerPainter extends CustomPainter {
       textPainter.text = TextSpan(
         text: tickSpeed.toString(),
         style: TextStyle(
-          color: Colors.white.withOpacity(0.7),
+          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
           fontSize: 14,
           fontWeight: FontWeight.bold,
         ),
@@ -143,7 +159,9 @@ class SpeedometerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(covariant SpeedometerPainter oldDelegate) {
+    return speed != oldDelegate.speed ||
+        maxSpeed != oldDelegate.maxSpeed ||
+        context != oldDelegate.context;
   }
 }

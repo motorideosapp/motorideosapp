@@ -1,16 +1,18 @@
+
 import 'dart:async';
 import 'dart:collection';
-import 'dart:io';
 import 'package:call_log/call_log.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:moto_ride_os/main.dart';
 import 'package:moto_ride_os/widgets/music/music_library_panel.dart';
 import 'package:moto_ride_os/widgets/music_player_widget.dart';
 import 'package:moto_ride_os/widgets/navigation_widget.dart';
 import 'package:moto_ride_os/widgets/notifications_widget.dart';
 import 'package:moto_ride_os/widgets/speedometer_widget.dart';
+import 'package:moto_ride_os/widgets/theme_switcher.dart';
 import 'package:moto_ride_os/widgets/weather_widget.dart';
 import 'package:moto_ride_os/services/weather_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -92,7 +94,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         forceLocationManager: true,
         intervalDuration: const Duration(milliseconds: 500),
         foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: "Moto Ride OS is using your location for speed tracking",
+          notificationText:
+              "Moto Ride OS is using your location for speed tracking",
           notificationTitle: "Location Active",
           enableWakeLock: true,
         ),
@@ -246,14 +249,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 0.8,
-            colors: [Color(0xFF2a2a2e), Color(0xFF1c1c1e)],
-            stops: [0.0, 1.0],
-          ),
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Stack(
@@ -310,13 +306,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       height: panelHeight,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1c1c1e),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.all(Radius.circular(20)),
-          border:
-              Border.all(color: Colors.cyanAccent.withOpacity(0.5), width: 1.5),
+          border: Border.all(
+              color: Theme.of(context).primaryColor.withOpacity(0.5),
+              width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.cyanAccent.withOpacity(0.2),
+              color: Theme.of(context).primaryColor.withOpacity(0.2),
               blurRadius: 25.0,
             )
           ],
@@ -328,16 +325,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Müzik Arşivi',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white70),
+                    icon: Icon(Icons.close,
+                        color: Theme.of(context).iconTheme.color),
                     onPressed: _toggleMusicLibrary,
                   ),
                 ],
@@ -392,13 +390,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       height: panelHeight,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1c1c1e),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.all(Radius.circular(20)),
-          border:
-              Border.all(color: Colors.cyanAccent.withOpacity(0.5), width: 1.5),
+          border: Border.all(
+              color: Theme.of(context).primaryColor.withOpacity(0.5),
+              width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.cyanAccent.withOpacity(0.2),
+              color: Theme.of(context).primaryColor.withOpacity(0.2),
               blurRadius: 25.0,
             )
           ],
@@ -410,13 +409,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Son Aramalar',
+                  Text('Son Aramalar',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 20,
                           fontWeight: FontWeight.bold)),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white70),
+                    icon: Icon(Icons.close,
+                        color: Theme.of(context).iconTheme.color),
                     onPressed: _toggleRecentCalls,
                   ),
                 ],
@@ -424,9 +424,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             Expanded(
               child: _callLogEntries.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('Arama kaydı bulunamadı.',
-                          style: TextStyle(color: Colors.white70)))
+                          style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyMedium?.color)))
                   : ListView.builder(
                       padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 8.0),
                       itemCount: _callLogEntries.length > 5
@@ -436,11 +437,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         final entry = _callLogEntries.elementAt(index);
                         return ListTile(
                           leading: Icon(_getCallTypeIcon(entry.callType),
-                              color: Colors.white70),
+                              color: Theme.of(context).iconTheme.color),
                           title: Text(
                             entry.name ?? entry.formattedNumber ?? 'Bilinmeyen',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 16),
+                            style: TextStyle(
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                fontSize: 16),
                             overflow: TextOverflow.ellipsis,
                           ),
                           onTap: () async {
@@ -457,7 +459,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
             ),
-            const Divider(color: Colors.white24, height: 1),
+            Divider(color: Theme.of(context).dividerColor, height: 1),
             Padding(
               padding: const EdgeInsets.symmetric(
                   horizontal: 16.0, vertical: 8.0),
@@ -465,8 +467,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                      icon: const Icon(Icons.contacts_rounded,
-                          color: Colors.white, size: 32),
+                      icon: Icon(Icons.contacts_rounded,
+                          color: Theme.of(context).iconTheme.color, size: 32),
                       onPressed: () async {
                         final Uri url =
                             Uri(scheme: 'content', path: 'contacts/people');
@@ -477,8 +479,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         }
                       }),
                   IconButton(
-                    icon: const Icon(Icons.dialpad_rounded,
-                        color: Colors.white, size: 32),
+                    icon: Icon(Icons.dialpad_rounded,
+                        color: Theme.of(context).iconTheme.color, size: 32),
                     onPressed: _toggleDialpad,
                   ),
                 ],
@@ -504,13 +506,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       height: panelHeight,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1c1c1e),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.all(Radius.circular(20)),
-          border:
-              Border.all(color: Colors.cyanAccent.withOpacity(0.5), width: 1.5),
+          border: Border.all(
+              color: Theme.of(context).primaryColor.withOpacity(0.5),
+              width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.cyanAccent.withOpacity(0.2),
+              color: Theme.of(context).primaryColor.withOpacity(0.2),
               blurRadius: 25.0,
             )
           ],
@@ -525,15 +528,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _dialedNumber.isEmpty ? "Numara Girin" : _dialedNumber,
                   style: TextStyle(
                       color: _dialedNumber.isEmpty
-                          ? Colors.white54
-                          : Colors.white,
+                          ? Theme.of(context).textTheme.bodyMedium?.color
+                          : Theme.of(context).textTheme.bodyLarge?.color,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2.0),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis),
             ),
-            const Divider(color: Colors.white24, height: 1),
+            Divider(color: Theme.of(context).dividerColor, height: 1),
             Expanded(
               child: GridView.count(
                 padding: const EdgeInsets.all(16),
@@ -577,8 +580,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: const Icon(Icons.call, color: Colors.white),
                   ),
                   IconButton(
-                      icon: const Icon(Icons.backspace_rounded,
-                          color: Colors.white, size: 32),
+                      icon: Icon(Icons.backspace_rounded,
+                          color: Theme.of(context).iconTheme.color, size: 32),
                       onPressed: () => _onDialpadButtonPressed("backspace"),
                   ),
                 ],
@@ -596,9 +599,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       borderRadius: BorderRadius.circular(50),
       child: Center(
         child: Text(text,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 28,
-                color: Colors.white,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.w400)),
       ),
     );
@@ -646,6 +649,7 @@ class _DashboardLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     const double padding = 16.0;
     final double speedometerSize = constraints.maxHeight * 0.7;
+
     return SafeArea(
       child: Stack(
         children: [
@@ -707,9 +711,16 @@ class _DashboardLayout extends StatelessWidget {
           Positioned(
             top: padding,
             right: padding,
-            child: GestureDetector(
-              onTap: onMusicTap,
-              child: const MusicPlayerWidget(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                const ThemeSwitcher(),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: onMusicTap,
+                  child: const MusicPlayerWidget(),
+                ),
+              ],
             ),
           ),
         ],
