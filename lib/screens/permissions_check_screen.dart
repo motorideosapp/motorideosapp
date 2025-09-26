@@ -1,9 +1,20 @@
+
 import 'package:flutter/material.dart';
+import 'package:moto_ride_os/models/permission_status.dart' as app_status;
 import 'package:moto_ride_os/screens/dashboard_screen.dart';
 import 'package:moto_ride_os/services/permission_service.dart';
-import 'package:moto_ride_os/models/permission_status.dart' as app_status;
 import 'package:permission_handler/permission_handler.dart';
 
+/// Represents a rule for checking a specific permission.
+class PermissionRule {
+  /// A function that returns true if the permission is not granted.
+  final bool Function(app_status.PermissionStatus) isViolated;
+
+  /// The error UI to display if the permission is not granted.
+  final Widget Function(VoidCallback, VoidCallback) errorUIBuilder;
+
+  PermissionRule({required this.isViolated, required this.errorUIBuilder});
+}
 
 class PermissionsCheckScreen extends StatefulWidget {
   const PermissionsCheckScreen({super.key});
@@ -15,38 +26,94 @@ class PermissionsCheckScreen extends StatefulWidget {
 class _PermissionsCheckScreenState extends State<PermissionsCheckScreen> {
   final PermissionService _permissionService = PermissionService();
   app_status.PermissionStatus? _status;
+  List<PermissionRule> _permissionRules = [];
 
   @override
   void initState() {
     super.initState();
-    // Ekrana ilk çizimden hemen sonra izinleri kontrol et
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndNavigate();
-    });
+    _initializeRules();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkPermissionsAndNavigate());
   }
 
-  Future<void> _checkAndNavigate() async {
-    // Servis aracılığıyla mevcut izin durumlarını kontrol et
-    final initialStatus = await _permissionService.checkPermissions();
+  /// Initializes the list of permission rules.
+  void _initializeRules() {
+    _permissionRules = [
+      PermissionRule(
+        isViolated: (status) => !status.isLocationServiceEnabled,
+        errorUIBuilder: (onPressed, onRetry) => _buildErrorUI(
+          icon: Icons.location_disabled_rounded,
+          message: "Hız ve navigasyon özellikleri için lütfen cihazınızın konum servislerini açın.",
+          buttonText: "Konum Servislerini Aç",
+          onPressed: onPressed,
+          onRetry: onRetry,
+        ),
+      ),
+      PermissionRule(
+        isViolated: (status) => !status.isBluetoothEnabled,
+        errorUIBuilder: (onPressed, onRetry) => _buildErrorUI(
+          icon: Icons.bluetooth_disabled_rounded,
+          message: "İnterkom ve diğer cihazlara bağlanabilmek için Bluetooth izni gereklidir.",
+          buttonText: "İzin Ayarlarını Aç",
+          onPressed: onPressed,
+          onRetry: onRetry,
+        ),
+      ),
+      PermissionRule(
+        isViolated: (status) => !status.isMicrophoneGranted,
+        errorUIBuilder: (onPressed, onRetry) => _buildErrorUI(
+          icon: Icons.mic_off_rounded,
+          message: "Sesli komutlar ve telefon görüşmeleri için mikrofon izni gereklidir.",
+          buttonText: "İzin Ayarlarını Aç",
+          onPressed: onPressed,
+          onRetry: onRetry,
+        ),
+      ),
+      PermissionRule(
+        isViolated: (status) => !status.isAudioAccessGranted,
+        errorUIBuilder: (onPressed, onRetry) => _buildErrorUI(
+          icon: Icons.music_off_rounded,
+          message: "Cihazınızdaki müziklere erişebilmek için depolama izni gereklidir.",
+          buttonText: "İzin Ayarlarını Aç",
+          onPressed: onPressed,
+          onRetry: onRetry,
+        ),
+      ),
+      PermissionRule(
+        isViolated: (status) => !status.isInternetConnected,
+        errorUIBuilder: (_, onRetry) => _buildErrorUI(
+          icon: Icons.wifi_off_rounded,
+          message: "Harita ve diğer çevrimiçi servisler için internet bağlantısı gereklidir.",
+          buttonText: "Tekrar Dene",
+          onPressed: onRetry, // For internet, main action is to retry.
+          showRetryButton: false, // No need for a separate retry button.
+        ),
+      ),
+    ];
+  }
 
-    // Eğer tüm izinler zaten verilmişse, doğrudan ana ekrana geç
+  /// Checks permissions and navigates to the dashboard if all are granted.
+  Future<void> _checkPermissionsAndNavigate() async {
+    if (!mounted) return;
+
+    // Show loading indicator while checking.
+    setState(() {
+      _status = null;
+    });
+
+    final initialStatus = await _permissionService.checkPermissions();
     if (initialStatus.allPermissionsGranted) {
       _navigateToDashboard();
       return;
     }
 
-    // İzinler eksikse, kullanıcıdan izinleri iste
+    // If permissions are missing, request them.
     await _permissionService.requestPermissions();
-
-    // İstek sonrası en güncel durumu tekrar kontrol et
     final finalStatus = await _permissionService.checkPermissions();
 
-    // Eğer artık tüm izinler tamamsa ana ekrana geç
-    if (finalStatus.allPermissionsGranted) {
-      _navigateToDashboard();
-    } else {
-      // Değilse, eksik izinleri göstermek için state'i güncelle
-      if (mounted) {
+    if (mounted) {
+      if (finalStatus.allPermissionsGranted) {
+        _navigateToDashboard();
+      } else {
         setState(() {
           _status = finalStatus;
         });
@@ -72,59 +139,25 @@ class _PermissionsCheckScreenState extends State<PermissionsCheckScreen> {
     );
   }
 
+  /// Builds the main body of the screen based on the current permission status.
   Widget _buildBody() {
-    // Eğer _status henüz belirlenmediyse (ilk kontrol anı)
     if (_status == null) {
       return _buildLoadingUI();
     }
 
-    // Eksik olan ilk izne göre ilgili hata ekranını göster
-    if (!_status!.isLocationServiceEnabled) {
-      return _buildErrorUI(
-        icon: Icons.location_disabled_rounded,
-        message: "Hız ve navigasyon özellikleri için lütfen cihazınızın konum servislerini açın.",
-        buttonText: "Konum Servislerini Aç",
-        onPressed: () => openAppSettings(),
-      );
-    }
-    if (!_status!.isBluetoothEnabled) {
-      return _buildErrorUI(
-        icon: Icons.bluetooth_disabled_rounded,
-        message: "İnterkom ve diğer cihazlara bağlanabilmek için Bluetooth izni gereklidir.",
-        buttonText: "İzin Ayarlarını Aç",
-        onPressed: () => openAppSettings(),
-      );
-    }
-    if (!_status!.isMicrophoneGranted) {
-      return _buildErrorUI(
-        icon: Icons.mic_off_rounded,
-        message: "Sesli komutlar ve telefon görüşmeleri için mikrofon izni gereklidir.",
-        buttonText: "İzin Ayarlarını Aç",
-        onPressed: () => openAppSettings(),
-      );
-    }
-    // YENİ EKLENEN KONTROL
-    if (!_status!.isAudioAccessGranted) {
-      return _buildErrorUI(
-        icon: Icons.music_off_rounded,
-        message: "Cihazınızdaki müziklere erişebilmek için depolama izni gereklidir.",
-        buttonText: "İzin Ayarlarını Aç",
-        onPressed: () => openAppSettings(),
-      );
-    }
-    if (!_status!.isInternetConnected) {
-       return _buildErrorUI(
-        icon: Icons.wifi_off_rounded,
-        message: "Harita ve diğer çevrimiçi servisler için internet bağlantısı gereklidir.",
-        buttonText: "Tekrar Dene", // İnternet için ayar butonu yerine tekrar deneme daha mantıklı
-        onPressed: _checkAndNavigate,
-      );
-    }
-    
-    // Herhangi bir durum eşleşmezse, varsayılan olarak yükleme ekranı göster
-    return _buildLoadingUI();
+    // Find the first permission rule that is violated.
+    final violatedRule = _permissionRules.firstWhere(
+      (rule) => rule.isViolated(_status!),
+      orElse: () => PermissionRule(
+        isViolated: (_) => true,
+        errorUIBuilder: (_, onRetry) => _buildLoadingUI(), // Fallback to loading
+      ),
+    );
+
+    return violatedRule.errorUIBuilder(() async => await openAppSettings(), _checkPermissionsAndNavigate);
   }
 
+  /// Builds the loading indicator UI.
   Widget _buildLoadingUI() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -139,11 +172,14 @@ class _PermissionsCheckScreenState extends State<PermissionsCheckScreen> {
     );
   }
 
+  /// Builds the generic error UI for a missing permission.
   Widget _buildErrorUI({
     required IconData icon,
     required String message,
     required String buttonText,
     required VoidCallback onPressed,
+    VoidCallback? onRetry,
+    bool showRetryButton = true,
   }) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -169,11 +205,13 @@ class _PermissionsCheckScreenState extends State<PermissionsCheckScreen> {
             ),
             onPressed: onPressed,
           ),
-          const SizedBox(height: 16),
-          TextButton(
-            child: const Text("Tekrar Dene", style: TextStyle(color: Colors.white70)),
-            onPressed: _checkAndNavigate,
-          ),
+          if (showRetryButton && onRetry != null) ...[
+            const SizedBox(height: 16),
+            TextButton(
+              child: const Text("Tekrar Dene", style: TextStyle(color: Colors.white70)),
+              onPressed: onRetry,
+            ),
+          ],
         ],
       ),
     );

@@ -4,11 +4,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
 class WeatherService {
-  final String _apiKey = 'SENIN_OPENWEATHER_API_ANAHTARIN_BURAYA'; 
+  final String apiKey;
   final String _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
 
+  WeatherService(this.apiKey);
+
   Future<Map<String, dynamic>> getWeatherData() async {
-    if (_apiKey == 'SENIN_OPENWEATHER_API_ANAHTARIN_BURAYA' || _apiKey.isEmpty) {
+    if (apiKey.isEmpty) {
       return _errorData('API Key not configured');
     }
 
@@ -17,7 +19,7 @@ class WeatherService {
         desiredAccuracy: LocationAccuracy.low,
       );
 
-      final url = '$_baseUrl?lat=${position.latitude}&lon=${position.longitude}&appid=$_apiKey&units=metric';
+      final url = '$_baseUrl?lat=${position.latitude}&lon=${position.longitude}&appid=$apiKey&units=metric';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
