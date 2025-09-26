@@ -39,7 +39,6 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-    - assets/images/
     - assets/l10n/
     - assets/map_styles/
     - assets/config.json
