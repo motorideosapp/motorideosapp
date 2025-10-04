@@ -1,0 +1,56 @@
+name: moto_ride_os
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  # Original Dependencies
+  cupertino_icons: ^1.0.6
+  google_maps_flutter: ^2.6.1
+  geolocator: ^12.0.0
+  http: ^1.2.1
+  weather: ^3.1.1
+  flutter_svg: ^2.0.10+1
+  permission_handler: ^11.3.1
+  vector_math: ^2.1.4
+  flutter_launcher_icons: ^0.13.1
+  provider: ^6.1.2
+  shared_preferences: ^2.2.3
+
+  # RESTORED - Dependencies I mistakenly deleted
+  call_log: any
+  url_launcher: any
+  wakelock_plus: any
+  connectivity_plus: any
+  device_info_plus: any
+  flutter_blue_plus: any
+  path_provider: any
+  audioplayers: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/images/ # CORRECTED: This now includes ALL files in the images folder
+    - assets/weather_icons/
+    - assets/config.json
+    - assets/map_styles/
