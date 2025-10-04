@@ -1,0 +1,106 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Temel Bağlantı ve Konum İzinleri -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!--
+      BLUETOOTH İZİNLERİ
+      Android 12 (API 31) ve sonrası için `BLUETOOTH_SCAN` ve `BLUETOOTH_CONNECT` gereklidir.
+      Ancak, interkom gibi Klasik Bluetooth cihazlarının taranması ve bağlanması için,
+      bazı cihazlar ve kütüphaneler hala eski `BLUETOOTH` ve `BLUETOOTH_ADMIN` izinlerini de
+      gerektirebilmektedir. Bu nedenle, `maxSdkVersion` kısıtlamasını kaldırarak
+      bu izinlerin tüm Android versiyonlarında erişilebilir olmasını sağlıyoruz. Bu,
+      daha geniş bir cihaz yelpazesiyle uyumluluğu artırır.
+    -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+
+    <!-- Donanım Özellikleri -->
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
+
+    <!-- Mikrofon İzni -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Arama Kayıtları ve Arama Yapma İzinleri -->
+    <uses-permission android:name="android.permission.READ_CALL_LOG"/>
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+
+    <!-- Müzik/Depolama İzinleri -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
+    <!-- flutter_callkit_incoming için Gerekli İzinler -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+
+    <application
+        android:label="moto_ride_os"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="API_Buraya_gelecek"/>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
+            android:turnScreenOn="true"
+            android:showOnLockScreen="true">
+
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme"
+                />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- flutter_callkit_incoming Alıcısı -->
+        <receiver
+            android:name="com.hiennv.flutter_callkit_incoming.CallKitIncomingBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_INCOMING" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_START" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_ACCEPT" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_DECLINE" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_ENDED" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TIMEOUT" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_CALLBACK" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_HOLD" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_MUTE" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_DMTF" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_GROUP" />
+                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_AUDIO_SESSION" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="content" android:host="contacts" />
+        </intent>
+    </queries>
+</manifest>
