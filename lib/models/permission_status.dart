@@ -6,6 +6,7 @@ class PermissionStatus {
   final bool isBluetoothEnabled;      // Bluetooth açık mı?
   final bool isMicrophoneGranted;     // Mikrofon izni var mı?
   final bool isAudioAccessGranted;    // Müzik/Depolama izni var mı?
+  final bool isSystemAlertWindowGranted; // Diğer uygulamaların üzerinde gösterme izni
 
   const PermissionStatus({
     required this.isLocationServiceEnabled,
@@ -14,16 +15,15 @@ class PermissionStatus {
     required this.isBluetoothEnabled,
     required this.isMicrophoneGranted,
     required this.isAudioAccessGranted,
+    required this.isSystemAlertWindowGranted,
   });
 
   // Tüm kritik izinlerin ve servislerin tam olup olmadığını kontrol eden yardımcı getter.
-  // GELİŞTİRME NOTU: Emülatörde Bluetooth testi yapılamadığı için isBluetoothEnabled
-  // kontrolü geçici olarak devre dışı bırakıldı. Gerçek cihazda test etmeden önce AKTİF ET!
   bool get allPermissionsGranted =>
       isLocationServiceEnabled &&
           isLocationPermissionGranted &&
           isInternetConnected &&
-          isBluetoothEnabled && // <-- ARTIK AKTİF!
+          // isBluetoothEnabled && // Bluetooth zorunluluğu kaldırıldı
           isMicrophoneGranted &&
           isAudioAccessGranted;
 }

@@ -39,6 +39,8 @@ class PermissionService {
     final locationStatus = await handler.Permission.locationWhenInUse.status;
     final microphoneStatus = await handler.Permission.microphone.status;
     final audioStatus = await handler.Permission.audio.status;
+    // YENİ EKLENDİ: Diğer uygulamaların üzerinde gösterme izninin kontrolü
+    final systemAlertWindowStatus = await handler.Permission.systemAlertWindow.status;
 
     bool areBluetoothPermissionsGranted = false;
     if (Platform.isAndroid) {
@@ -63,6 +65,8 @@ class PermissionService {
       isBluetoothEnabled: isBluetoothOn && areBluetoothPermissionsGranted,
       isMicrophoneGranted: microphoneStatus.isGranted,
       isAudioAccessGranted: audioStatus.isGranted,
+      // YENİ EKLENDİ: İzin durumu modeline aktarılıyor
+      isSystemAlertWindowGranted: systemAlertWindowStatus.isGranted,
     );
   }
 
@@ -72,6 +76,8 @@ class PermissionService {
       handler.Permission.locationWhenInUse,
       handler.Permission.microphone,
       handler.Permission.audio,
+      // YENİ EKLENDİ: Diğer uygulamaların üzerinde gösterme izni de istenir
+      handler.Permission.systemAlertWindow,
     ];
 
     if (Platform.isAndroid) {

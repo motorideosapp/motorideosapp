@@ -4,8 +4,6 @@ import 'package:moto_ride_os/models/permission_status.dart';
 
 class PermissionsCheckScreen extends StatefulWidget {
   final Widget child;
-  // HATA DÜZELTME: Bu widget artık dinamik bir alt widget (DashboardScreen) alabildiği için
-  // constructor'ı sabit (const) olamaz.
   PermissionsCheckScreen({super.key, required this.child});
 
   @override
@@ -39,14 +37,12 @@ class _PermissionsCheckScreenState extends State<PermissionsCheckScreen> {
       future: _permissionStatusFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // İzinler kontrol edilirken kısa bir bekleme ekranı gösterilir.
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (snapshot.hasError || !snapshot.hasData) {
-          // Hata durumunda gösterilecek ekran.
           return Scaffold(
             body: Center(
               child: Text('İzinler kontrol edilirken bir hata oluştu: ${snapshot.error}'),
@@ -56,12 +52,20 @@ class _PermissionsCheckScreenState extends State<PermissionsCheckScreen> {
 
         final permissionStatus = snapshot.data!;
 
-        // ANAHTAR DEĞİŞİKLİK: Eğer tüm izinler verilmişse, bekleme. Direkt ana ekrana geç.
+        // Temel izinler verilmişse ana ekranı göster.
+        // "Diğer uygulamalar üzerinde gösterme" izni olmasa bile uygulama açılır.
         if (permissionStatus.allPermissionsGranted) {
-          return widget.child; // widget.child burada DashboardScreen oluyor.
+          return Stack(
+            children: [
+              widget.child, // Ana içerik (DashboardScreen)
+              // Eğer "Diğer uygulamalar üzerinde gösterme" izni verilmemişse uyarı göster.
+              if (!permissionStatus.isSystemAlertWindowGranted)
+                _buildSystemAlertWindowPermissionOverlay(),
+            ],
+          );
         }
 
-        // İzinler eksikse, kullanıcıya bilgi ver ve izin isteme butonu göster.
+        // Temel izinler eksikse, izin isteme ekranını göster.
         return Scaffold(
           body: SafeArea(
             child: Center(
@@ -97,24 +101,71 @@ class _PermissionsCheckScreenState extends State<PermissionsCheckScreen> {
     );
   }
 
+  // "Diğer uygulamalar üzerinde gösterme" izni için uyarı katmanı
+  Widget _buildSystemAlertWindowPermissionOverlay() {
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withOpacity(0.7),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.warning_amber, color: Colors.yellow, size: 80),
+              const SizedBox(height: 24),
+              Text(
+                'Önemli İzin Gerekli',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Uygulamanın arama ekranı gibi önemli özellikleri diğer uygulamaların üzerinde gösterebilmesi için bu izni vermeniz gerekiyor.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white70),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.yellow,
+                  foregroundColor: Colors.black,
+                ),
+                onPressed: _requestPermissionsAndRefresh,
+                child: const Text('Ayarlara Git ve İzin Ver'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // İzin listesini oluşturan widget
   Widget _buildPermissionList(BuildContext context, PermissionStatus status) {
     final permissions = {
       'Konum Servisleri': status.isLocationServiceEnabled,
       'Konum İzni': status.isLocationPermissionGranted,
       'İnternet Bağlantısı': status.isInternetConnected,
-      'Bluetooth': status.isBluetoothEnabled,
       'Mikrofon Erişimi': status.isMicrophoneGranted,
       'Müzik ve Ses Erişimi': status.isAudioAccessGranted,
+      'Diğer Uygulamaların Üzerinde Göster': status.isSystemAlertWindowGranted,
     };
 
     return Column(
       children: permissions.entries.map((entry) {
+        final isGranted = entry.value;
         return ListTile(
           leading: Icon(
-            entry.value ? Icons.check_circle : Icons.cancel,
-            color: entry.value ? Colors.green : Colors.red,
+            isGranted ? Icons.check_circle : Icons.cancel,
+            color: isGranted ? Colors.green : Colors.red,
           ),
           title: Text(entry.key),
+          subtitle: !isGranted && entry.key == 'Diğer Uygulamaların Üzerinde Göster'
+              ? const Text(
+                  "Arama ekranı için kritik önemde. Yönlendirileceğiniz listede 'Moto Ride OS' uygulamasını bulup izni etkinleştirmeniz gerekir.",
+                  style: TextStyle(color: Colors.orange, fontStyle: FontStyle.italic),
+                )
+              : null,
         );
       }).toList(),
     );
